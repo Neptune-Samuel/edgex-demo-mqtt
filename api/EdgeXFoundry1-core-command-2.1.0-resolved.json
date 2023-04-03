@@ -1,0 +1,1442 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Edgex Foundry - Core Command API",
+    "description": "This is the definition of the API for the Core Command service in the EdgeX Foundry IOT microservice platform. Core Command is responsible for storing command definitions and also for executing those commands as reads and writes against target devices.",
+    "version": "2.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:59882/api/v2",
+      "description": "URL for local development and testing"
+    }
+  ],
+  "paths": {
+    "/device/name/{name}/{command}": {
+      "get": {
+        "summary": "Issue the specified read command referenced by the command name to the device/sensor that is also referenced by name.",
+        "parameters": [
+          {
+            "name": "X-Correlation-ID",
+            "in": "header",
+            "description": "A unique identifier correlating a request to its associated response, facilitating tracing through being included on requests originating from the initiating request.",
+            "required": false,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "14a42ea6-c394-41c3-8bcd-a29b9f5e6835"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "description": "A name uniquely identifying a device.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sensor01"
+          },
+          {
+            "name": "command",
+            "in": "path",
+            "description": "A name uniquely identifying a command.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "command01"
+          },
+          {
+            "name": "ds-pushevent",
+            "in": "query",
+            "description": "If set to yes, a successful GET will result in an event being pushed to the EdgeX system",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "default": "false",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "example": true
+          },
+          {
+            "name": "ds-returnevent",
+            "in": "query",
+            "description": "If set to no, there will be no Event returned in the http response",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "string",
+              "default": "true",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "example": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request is in an invalid state",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "The device is locked (AdminState) or down (OperatingState)",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred on the server",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Issue the specified write command referenced by the command name to the device/sensor that is also referenced by name.",
+        "parameters": [
+          {
+            "name": "X-Correlation-ID",
+            "in": "header",
+            "description": "A unique identifier correlating a request to its associated response, facilitating tracing through being included on requests originating from the initiating request.",
+            "required": false,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "14a42ea6-c394-41c3-8bcd-a29b9f5e6835"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "description": "A name uniquely identifying a device.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "command",
+            "in": "path",
+            "description": "A name uniquely identifying a command.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SettingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request is in an invalid state",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "423": {
+            "description": "The device is locked (AdminState)",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred on the server",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device/name/{name}": {
+      "get": {
+        "summary": "Returns all commands associated with the specified device.",
+        "parameters": [
+          {
+            "name": "X-Correlation-ID",
+            "in": "header",
+            "description": "A unique identifier correlating a request to its associated response, facilitating tracing through being included on requests originating from the initiating request.",
+            "required": false,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "14a42ea6-c394-41c3-8bcd-a29b9f5e6835"
+          },
+          {
+            "name": "name",
+            "in": "path",
+            "description": "A name uniquely identifying a device.",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceCoreCommandResponse"
+                },
+                "examples": {
+                  "DeviceCoreCommandExample": {
+                    "$ref": "#/components/examples/DeviceCoreCommandExample"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The requested resource does not exist",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred on the server",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/device/all": {
+      "get": {
+        "summary": "Returns a paginated list of MultiDeviceCoreCommandsResponse. The list contains all of the commands in the system associated with their respective device.",
+        "parameters": [
+          {
+            "name": "X-Correlation-ID",
+            "in": "header",
+            "description": "A unique identifier correlating a request to its associated response, facilitating tracing through being included on requests originating from the initiating request.",
+            "required": false,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "14a42ea6-c394-41c3-8bcd-a29b9f5e6835"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "The number of items to skip before starting to collect the result set.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "The numbers of items to return.  Specify -1 will return all remaining items after offset.  The maximum will be the MaxResultCount as defined in the configuration of service.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "minimum": -1,
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiDeviceCoreCommandsResponse"
+                },
+                "examples": {
+                  "MultiCoreCommandsExample": {
+                    "$ref": "#/components/examples/MultiDeviceCoreCommandsExample"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request is in an invalid state",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "400Example": {
+                    "$ref": "#/components/examples/400Example"
+                  }
+                }
+              }
+            }
+          },
+          "416": {
+            "description": "Request range is not satisfiable",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "416Example": {
+                    "$ref": "#/components/examples/416Example"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "An unexpected error occurred on the server",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ErrorResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/config": {
+      "get": {
+        "summary": "Returns the current configuration of the service.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Interval Server Error",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "500Example": {
+                    "$ref": "#/components/examples/500Example"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "summary": "An endpoint that can be used to obtain CPU/Memory usage stats for a given service.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                },
+                "example": {
+                  "apiVersion": "v2",
+                  "metrics": {
+                    "memAlloc": 877192,
+                    "memFrees": 2248915,
+                    "memLiveObjects": 6522,
+                    "memMallocs": 2255437,
+                    "memSys": 72876280,
+                    "memTotalAlloc": 203821192,
+                    "cpuBusyAvg": 2.2521221920656003
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Interval Server Error",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "500Example": {
+                    "$ref": "#/components/examples/500Example"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ping": {
+      "get": {
+        "summary": "A simple 'ping' endpoint that can be used as a service healthcheck",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PingResponse"
+                },
+                "example": {
+                  "apiVersion": "v2",
+                  "timestamp": "Mon, 02 Jan 2006 15:04:05 MST"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Interval Server Error",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "500Example": {
+                    "$ref": "#/components/examples/500Example"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "summary": "A simple 'version' endpoint that will return the current version of the service",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionResponse"
+                },
+                "example": {
+                  "apiVersion": "v2",
+                  "version": "2.0.0-dev.13"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Interval Server Error",
+            "headers": {
+              "X-Correlation-ID": {
+                "$ref": "#/components/headers/correlatedResponseHeader"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "500Example": {
+                    "$ref": "#/components/examples/500Example"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseRequest": {
+        "required": [
+          "apiVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Uniquely identifies this request. For implementation, recommend this value be generated by the type's constructor.",
+            "format": "uuid",
+            "example": "e6e8a2f4-eb14-4649-9e2b-175247911369"
+          },
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs.",
+            "example": "v2"
+          }
+        },
+        "description": "Defines basic properties which all use-case specific request DTO instances should support."
+      },
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs.",
+            "example": "v2"
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Uniquely identifies the request that resulted in this response.",
+            "format": "uuid",
+            "example": "e6e8a2f4-eb14-4649-9e2b-175247911369"
+          },
+          "statusCode": {
+            "type": "integer",
+            "description": "A numeric code signifying the operational status of the response."
+          },
+          "message": {
+            "type": "string",
+            "description": "A field that can contain a free-form message, such as an error message."
+          }
+        },
+        "description": "Defines basic properties which all use-case specific response DTO instances should support"
+      },
+      "BaseWithTotalCountResponse": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "description": "The total count of all multi instances."
+          }
+        },
+        "description": "Defines basic properties which all use-case specific response DTO instances should support",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          }
+        ]
+      },
+      "DeviceCoreCommand": {
+        "type": "object",
+        "properties": {
+          "deviceName": {
+            "type": "string"
+          },
+          "profileName": {
+            "type": "string"
+          },
+          "coreCommands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoreCommand"
+            }
+          }
+        }
+      },
+      "CoreCommandParameter": {
+        "type": "object",
+        "properties": {
+          "resourceName": {
+            "type": "string"
+          },
+          "valueType": {
+            "type": "string",
+            "enum": [
+              "Bool",
+              "String",
+              "Uint8",
+              "Uint16",
+              "Uint32",
+              "Uint64",
+              "Int8",
+              "Int16",
+              "Int32",
+              "Int64",
+              "Float32",
+              "Float64",
+              "Binary",
+              "BoolArray",
+              "StringArray",
+              "Uint8Array",
+              "Uint16Array",
+              "Uint32Array",
+              "Uint64Array",
+              "Int8Array",
+              "Int16Array",
+              "Int32Array",
+              "Int64Array",
+              "Float32Array",
+              "Float64Array",
+              "Object"
+            ]
+          }
+        },
+        "description": "Indicate the core command expected readings or parameters. For Get command, it describes the expected readings. For Set command, it describes the parameters in the payload."
+      },
+      "CoreCommand": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "get": {
+            "type": "boolean"
+          },
+          "set": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "parameters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoreCommandParameter"
+            }
+          }
+        }
+      },
+      "DeviceCoreCommandResponse": {
+        "type": "object",
+        "properties": {
+          "deviceCoreCommand": {
+            "$ref": "#/components/schemas/DeviceCoreCommand"
+          }
+        },
+        "description": "A response type for returning multiple DeviceCoreCommand to the caller.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          }
+        ]
+      },
+      "MultiDeviceCoreCommandsResponse": {
+        "type": "object",
+        "properties": {
+          "deviceCoreCommands": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeviceCoreCommand"
+            }
+          }
+        },
+        "description": "A response type for returning multiple DeviceCoreCommand to the caller.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseWithTotalCountResponse"
+          }
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "description": "A response type for returning a generic error to the caller.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          }
+        ]
+      },
+      "SettingRequest": {
+        "title": "Setting",
+        "type": "object",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "description": "Defines new values to be written to device resources, as part of an actuation (put) command to a device",
+        "example": {
+          "AHU-TargetTemperature": "28.5",
+          "AHU-TargetBand": "4.0",
+          "AHU-TargetHumidity": {
+            "Accuracy": "0.2-0.3% RH",
+            "Value": 59
+          }
+        }
+      },
+      "BaseReading": {
+        "required": [
+          "apiVersion",
+          "deviceName",
+          "origin",
+          "profileName",
+          "resourceName",
+          "valueType"
+        ],
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs."
+          },
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the reading",
+            "format": "uuid"
+          },
+          "created": {
+            "type": "integer",
+            "description": "A Unix timestamp indicating when (if) the reading was initially persisted to a database."
+          },
+          "origin": {
+            "type": "integer",
+            "description": "A Unix timestamp indicating when the reading was originated at the source device (can support nanoseconds)"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "The name of the device from which the reading originated"
+          },
+          "resourceName": {
+            "type": "string",
+            "description": "The device resource name for the reading"
+          },
+          "profileName": {
+            "type": "string",
+            "description": "The device profile name for the reading"
+          },
+          "valueType": {
+            "type": "string",
+            "description": "Indicates the datatype of the value property",
+            "enum": [
+              "Bool",
+              "String",
+              "Uint8",
+              "Uint16",
+              "Uint32",
+              "Uint64",
+              "Int8",
+              "Int16",
+              "Int32",
+              "Int64",
+              "Float32",
+              "Float64",
+              "Binary",
+              "BoolArray",
+              "StringArray",
+              "Uint8Array",
+              "Uint16Array",
+              "Uint32Array",
+              "Uint64Array",
+              "Int8Array",
+              "Int16Array",
+              "Int32Array",
+              "Int64Array",
+              "Float32Array",
+              "Float64Array",
+              "Object"
+            ]
+          }
+        },
+        "description": "A base reading type containing common properties from which more specific reading types inherit. This definition should not be implemented but is used elsewhere to indicate support for a mixed list of simple/binary readings in a single event."
+      },
+      "SimpleReading": {
+        "required": [
+          "value"
+        ],
+        "description": "An event reading for a simple data type",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseReading"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "description": "A string representation of the reading's value"
+              }
+            }
+          }
+        ]
+      },
+      "BinaryReading": {
+        "description": "An event reading for a binary data type",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseReading"
+          },
+          {
+            "required": [
+              "binaryValue",
+              "mediaType"
+            ],
+            "type": "object",
+            "properties": {
+              "binaryValue": {
+                "type": "string",
+                "description": "If the value of the reading is binary, it will be found in this property as a byte array",
+                "format": "byte"
+              },
+              "mediaType": {
+                "type": "string",
+                "description": "E.g. MIME Type, indicates what the content type of the binaryValue property is if it's populated."
+              }
+            }
+          }
+        ]
+      },
+      "Event": {
+        "required": [
+          "apiVersion",
+          "deviceName",
+          "id",
+          "origin",
+          "profileName",
+          "readings"
+        ],
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs."
+          },
+          "id": {
+            "type": "string",
+            "description": "The unique identifier for the event",
+            "format": "uuid"
+          },
+          "deviceName": {
+            "type": "string",
+            "description": "The name of the device from which the event originated"
+          },
+          "profileName": {
+            "type": "string",
+            "description": "The name of the device profile from which the event originated"
+          },
+          "created": {
+            "type": "integer",
+            "description": "A Unix timestamp indicating when (if) the event was initially persisted to a database."
+          },
+          "origin": {
+            "type": "integer",
+            "description": "A Unix timestamp indicating when the event was originated at the source device (can support nanoseconds)"
+          },
+          "readings": {
+            "type": "array",
+            "description": "One or more readings captured at the time of the event",
+            "items": {
+              "$ref": "#/components/schemas/SimpleReading"
+            }
+          },
+          "tags": {
+            "title": "tags",
+            "type": "object",
+            "description": "List of zero or more Tags attached to the Event which give more context to the Event",
+            "example": {
+              "Gateway-id": "HoustonStore-000123",
+              "Latitude": "29.630771",
+              "Longitude": "-95.377603"
+            }
+          }
+        },
+        "description": "A discrete event containing one or more readings"
+      },
+      "EventResponse": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/Event"
+          }
+        },
+        "description": "A response type for returning an Event to the caller.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseResponse"
+          }
+        ]
+      },
+      "ConfigResponse": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs."
+          },
+          "config": {
+            "type": "object",
+            "description": "An object containing the service's configuration. Please refer the configuration documentation of each service for more details at [EdgeX Foundry Documentation](https://docs.edgexfoundry.org)."
+          }
+        },
+        "description": "Provides a response containing the configuration for the targeted service."
+      },
+      "MetricsResponse": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs."
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/MetricsResponse_metrics"
+          }
+        },
+        "description": "A response from the /metrics endpoint providing memory and cpu utilization stats."
+      },
+      "PingResponse": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Outputs the current server timestamp in RFC1123 format",
+            "example": "Mon, 02 Jan 2006 15:04:05 MST"
+          }
+        }
+      },
+      "RequestEnvelope": {
+        "required": [
+          "action",
+          "content",
+          "strategy",
+          "type",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Indicates the type of operation applicable to the wrapped request. Valid values are 'create','read','update','delete', and 'command'"
+          },
+          "content": {
+            "type": "string",
+            "description": "A byte array containing a marshalled request type instance. This is the specific, semantically identifiable request -- such as an AddDeviceRequest.",
+            "format": "byte"
+          },
+          "strategy": {
+            "type": "string",
+            "description": "Indicates the expectation of whether a response should be produced synchronously or asynchronously. If asynchronously, desire for either a polling or push/callback should be provided. Valid values are 'sync','async-push','async-poll'"
+          },
+          "type": {
+            "type": "string",
+            "description": "The name of the type applicable to the request instance contained in the 'content' property."
+          },
+          "version": {
+            "type": "string",
+            "description": "Proposed field for explicitly defining version of request DTO. This is for advertising compatibility between a publisher/subscriber or requester/receiver",
+            "example": "2.0.x"
+          }
+        },
+        "description": "A wrapper type for use when sending a request to the /batch endpoint. Each individual request type in the HTTP request should be wrapped in an envelope to facilitate instantiation of the correct routing handler. See property descriptions below for more details."
+      },
+      "ResponseEnvelope": {
+        "required": [
+          "action",
+          "content",
+          "strategy",
+          "type",
+          "version"
+        ],
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Indicates the type of operation applicable to the wrapped response. This should be recapitulated from the originating request. Valid values are 'create','read','update','delete', and 'command'"
+          },
+          "content": {
+            "type": "string",
+            "description": "A byte array containing a marshalled response type instance. This is the specific, semantically identifiable response -- such as an AddDeviceResponse.",
+            "format": "byte"
+          },
+          "strategy": {
+            "type": "string",
+            "description": "Recapitulates the expectation with regard to the delivery of response that was specified on the originating request. Valid values are 'sync','async-push','async-poll'"
+          },
+          "type": {
+            "type": "string",
+            "description": "The name of the type applicable to the response instance contained in the 'content' property."
+          },
+          "version": {
+            "type": "string",
+            "description": "Proposed field for explicitly defining version of response DTO. This is for advertising compatibility between a publisher/subscriber or requester/receiver",
+            "example": "2.0.x"
+          }
+        },
+        "description": "A wrapper type for use when receiving a response from the /batch endpoint. Each individual response type in the HTTP response should be wrapped in an envelope to facilitate unmarshalling by the client. See property descriptions below for more details."
+      },
+      "VersionResponse": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string",
+            "description": "A version number shows the API version in DTOs.",
+            "example": "v2"
+          },
+          "version": {
+            "type": "string",
+            "description": "The latest version supported by the service."
+          }
+        },
+        "description": "A response returned from the /version endpoint whose purpose is to report out the latest version supported by the service."
+      },
+      "MetricsResponse_metrics": {
+        "type": "object",
+        "properties": {
+          "memAlloc": {
+            "type": "integer",
+            "description": "Alloc is bytes of allocated heap objects which is a uint64 type integer."
+          },
+          "memFrees": {
+            "type": "integer",
+            "description": "Frees is the cumulative count of heap objects freed which is a uint64 type integer."
+          },
+          "memLiveObjects": {
+            "type": "integer",
+            "description": "The uint64 type integer of live objects is Mallocs - Frees."
+          },
+          "memMallocs": {
+            "type": "integer",
+            "description": "The cumulative count of heap objects allocated which is a uint64 type integer."
+          },
+          "memSys": {
+            "type": "integer",
+            "description": "The total bytes of memory obtained from the OS which is a uint64 type integer."
+          },
+          "memTotalAlloc": {
+            "type": "integer",
+            "description": "Cumulative bytes allocated for heap objects which is a uint64 type integer."
+          },
+          "cpuBusyAvg": {
+            "type": "number",
+            "description": "A uint8 type integer indicates the average level of CPU utilization"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "offsetParam": {
+        "name": "offset",
+        "in": "query",
+        "description": "The number of items to skip before starting to collect the result set.",
+        "required": false,
+        "style": "form",
+        "explode": true,
+        "schema": {
+          "minimum": 0,
+          "type": "integer",
+          "default": 0
+        }
+      },
+      "limitParam": {
+        "name": "limit",
+        "in": "query",
+        "description": "The numbers of items to return.  Specify -1 will return all remaining items after offset.  The maximum will be the MaxResultCount as defined in the configuration of service.",
+        "required": false,
+        "style": "form",
+        "explode": true,
+        "schema": {
+          "minimum": -1,
+          "type": "integer",
+          "default": 20
+        }
+      },
+      "correlatedRequestHeader": {
+        "name": "X-Correlation-ID",
+        "in": "header",
+        "description": "A unique identifier correlating a request to its associated response, facilitating tracing through being included on requests originating from the initiating request.",
+        "required": false,
+        "style": "simple",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "example": "14a42ea6-c394-41c3-8bcd-a29b9f5e6835"
+      }
+    },
+    "examples": {
+      "400Example": {
+        "value": {
+          "apiVersion": "v2",
+          "statusCode": 400,
+          "message": "Bad Request"
+        }
+      },
+      "416Example": {
+        "value": {
+          "apiVersion": "v2",
+          "statusCode": 416,
+          "message": "Range Not Satisfiable"
+        }
+      },
+      "500Example": {
+        "value": {
+          "apiVersion": "v2",
+          "statusCode": 500,
+          "message": "Internal Server Error"
+        }
+      },
+      "DeviceCoreCommandExample": {
+        "value": {
+          "apiVersion": "v2",
+          "statusCode": 200,
+          "deviceCoreCommand": [
+            {
+              "deviceName": "testDevice",
+              "profileName": "testProfile",
+              "coreCommands": [
+                {
+                  "name": "coolingpoint1",
+                  "get": true,
+                  "path": "/api/v2/device/name/testDevice/command/coolingpoint1",
+                  "url": "http://localhost:59882",
+                  "parameters": [
+                    {
+                      "resourceName": "resource1",
+                      "valueType": "Int32"
+                    }
+                  ]
+                },
+                {
+                  "name": "coolingpoint2",
+                  "set": true,
+                  "path": "/api/v2/device/name/testDevice/command/coolingpoint2",
+                  "url": "http://localhost:59882",
+                  "parameters": [
+                    {
+                      "resourceName": "resource5",
+                      "valueType": "String"
+                    },
+                    {
+                      "resourceName": "resource6",
+                      "valueType": "Bool"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "MultiDeviceCoreCommandsExample": {
+        "value": {
+          "apiVersion": "v2",
+          "statusCode": 200,
+          "totalCount": 3,
+          "deviceCoreCommands": [
+            {
+              "deviceName": "testDevice1",
+              "profileName": "testProfile",
+              "coreCommands": [
+                {
+                  "name": "coolingpoint1",
+                  "get": true,
+                  "path": "/api/v2/device/name/testDevice1/command/coolingpoint1",
+                  "url": "http://localhost:59882",
+                  "parameters": [
+                    {
+                      "resourceName": "resource1",
+                      "valueType": "Int32"
+                    }
+                  ]
+                },
+                {
+                  "name": "coolingpoint2",
+                  "set": true,
+                  "path": "/api/v2/device/name/testDevice1/command/coolingpoint2",
+                  "url": "http://localhost:59882",
+                  "parameters": [
+                    {
+                      "resourceName": "resource2",
+                      "valueType": "Int16"
+                    },
+                    {
+                      "resourceName": "resource3",
+                      "valueType": "Int32"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "deviceName": "testDevice2",
+              "profileName": "testProfile",
+              "coreCommands": [
+                {
+                  "name": "coolingpoint1",
+                  "get": true,
+                  "path": "/api/v2/device/name/testDevice2/command/coolingpoint1",
+                  "url": "http://localhost:59882",
+                  "parameters": [
+                    {
+                      "resourceName": "resource4",
+                      "valueType": "Int32"
+                    }
+                  ]
+                },
+                {
+                  "name": "coolingpoint2",
+                  "set": true,
+                  "path": "/api/v2/device/name/testDevice2/command/coolingpoint2",
+                  "url": "http://localhost:59882",
+                  "parameters": [
+                    {
+                      "resourceName": "resource5",
+                      "valueType": "String"
+                    },
+                    {
+                      "resourceName": "resource6",
+                      "valueType": "Bool"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "headers": {
+      "correlatedResponseHeader": {
+        "description": "A response header that returns the unique correlation ID used to initiate the request.",
+        "style": "simple",
+        "explode": false,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "example": "14a42ea6-c394-41c3-8bcd-a29b9f5e6835"
+      }
+    }
+  }
+}
